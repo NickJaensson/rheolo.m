@@ -2,15 +2,21 @@ close all; clear
 
 global model flowtype rate mode lam alpha eps G alam tauy Kfac nexp stress_imp eta_s
 
-model = 1; % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
-flowtype = 1; % 1: shear, 2: planar extension, 3: uniaxial extension
-mode = 1; % current mode number
-lam  = [5.0]; %
-alpha = [0.1];
-eps = [0.1];
-G = 10000.0;
-alam = 3; % 0: no adapted alam  2: SRM1 model  3: SRM2 model
-eta_s = 100.0;
+numtimesteps1  = 40;    % number of time steps in zone 1
+numtimesteps2  = 1000;  % number of time steps in zone 2
+time1 = 4e-3;
+deltat1 = time1/numtimesteps1;
+deltat2 = 1e-3;
+
+model = 1;     % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
+flowtype = 1;  % 1: shear, 2: planar extension, 3: uniaxial extension
+mode = 1;      % current mode number
+lam  = [5.0];  % relaxation time
+alpha = [0.1]; % mobility in the Giesekus model 
+eps = [0.1];   % epsilon in the PTT model
+G = 10000.0;   % modulus
+alam = 3;      % 0: no adapted alam  2: SRM1 model  3: SRM2 model
+eta_s = 100.0; % solvent viscosity
 
 % if SRM1 or SRM2
 tauy = [2000.0]; % yield stress
@@ -24,15 +30,25 @@ stress_imp = 2100; % imposed stress level
 cvec = [1 0 0 1 0 1];
 shearstrain = 0.0;
 
-deltat = 1e-3;
-numsteps = 1e4;
+numsteps = numtimesteps1+numtimesteps2; % total number of steps
 
 stress_all = zeros(1,numsteps);
 strain_all = zeros(1,numsteps);
-time = deltat*([1:numsteps]-1);
+time_all = zeros(1,numsteps);
+
+deltat = deltat1;
+time = 0.0;
 
 % explicit Euler scheme for first solution
 for n=1:numsteps
+
+    % update the time
+    time = time + deltat;
+
+    % change the time step size
+    if ( n == numtimesteps1+1 )
+      deltat = deltat2;
+    end
 
     % initial step
     gdot1 = rate_for_stress(cvec);
@@ -58,13 +74,15 @@ for n=1:numsteps
     solventstress = eta_s * rate_for_stress(cvec);
     shearstress = solventstress + tau(2);
 
+    % store the solutions
     stress_all(n) = shearstress;
     strain_all(n) = shearstrain;
+    time_all(n) = time;
 
 end
 
 figure
-plot(time,strain_all)
+plot(time_all,strain_all)
 
 % function to calculate rate for a given stress
 function [rate] = rate_for_stress(cvec)
