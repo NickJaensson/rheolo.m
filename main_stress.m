@@ -1,5 +1,7 @@
 close all; clear
 
+addpath('subs/')
+
 numtimesteps1  = 40;    % number of time steps in zone 1
 numtimesteps2  = 1000;  % number of time steps in zone 2
 time1 = 4e-3;

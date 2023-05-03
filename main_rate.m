@@ -1,5 +1,7 @@
 close all; clear
 
+addpath('subs/')
+
 only_startup = 0;
 
 user.model = 1; % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
