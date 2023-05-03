@@ -1,30 +1,28 @@
 close all; clear
 
-global model flowtype rate lam alpha eps G alam tauy Kfac nexp stress_imp eta_s
-
 numtimesteps1  = 40;    % number of time steps in zone 1
 numtimesteps2  = 1000;  % number of time steps in zone 2
 time1 = 4e-3;
 deltat1 = time1/numtimesteps1;
 deltat2 = 1e-3;
 
-model = 1;     % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
-flowtype = 1;  % 1: shear, 2: planar extension, 3: uniaxial extension
-lam  = 5.0;    % relaxation time
-alpha = 0.1;   % mobility in the Giesekus model 
-eps = 0.1;     % epsilon in the PTT model
-G = 10000.0;   % modulus
-alam = 3;      % 0: no adapted alam  2: SRM1 model  3: SRM2 model
-eta_s = 100.0; % solvent viscosity
+user.model = 1;     % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
+user.flowtype = 1;  % 1: shear, 2: planar extension, 3: uniaxial extension
+user.lam  = 5.0;    % relaxation time
+user.alpha = 0.1;   % mobility in the Giesekus model 
+user.eps = 0.1;     % epsilon in the PTT model
+user.G = 10000.0;   % modulus
+user.alam = 3;      % 0: no adapted alam  2: SRM1 model  3: SRM2 model
+user.eta_s = 100.0; % solvent viscosity
 
 % if SRM1 or SRM2
-tauy = 2000.0; % yield stress
+user.tauy = 2000.0; % yield stress
 
 % if SRM2
-Kfac = 100.0;  % consistency factor of power law
-nexp = 0.5;    % shear thinning index
+user.Kfac = 100.0;  % consistency factor of power law
+user.nexp = 0.5;    % shear thinning index
 
-stress_imp = 2100; % imposed stress level
+user.stress_imp = 2100; % imposed stress level
 
 cvec = [1 0 0 1 0 1];
 shearstrain = 0.0;
@@ -50,22 +48,22 @@ for n=1:numsteps
     end
 
     % calculate k1 in Heun's method
-    gdot1 = rate_for_stress(cvec);
-    rate = gdot1;
-    k1 = rhs_viscoelastic(cvec);
+    gdot1 = rate_for_stress(cvec,user);
+    user.rate = gdot1;
+    k1 = rhs_viscoelastic(cvec,user);
 
     % calculate k2 in Heun's method
-    gdot2 = rate_for_stress(cvec+k1*deltat);
-    rate = gdot2;
-    k2 = rhs_viscoelastic(cvec+k1*deltat);
+    gdot2 = rate_for_stress(cvec+k1*deltat,user);
+    user.rate = gdot2;
+    k2 = rhs_viscoelastic(cvec+k1*deltat,user);
 
     % do step
     cvec = cvec + deltat * ( k1 + k2 ) / 2;
     shearstrain = shearstrain + deltat * ( gdot1 + gdot2 ) / 2;
 
     % get viscosity
-    tau = stress_viscoelastic_3D(cvec);
-    solventstress = eta_s * rate_for_stress(cvec);
+    tau = stress_viscoelastic_3D(cvec,user);
+    solventstress = user.eta_s * rate_for_stress(cvec,user);
     shearstress = solventstress + tau(2);
 
     % store the solutions
@@ -79,19 +77,17 @@ figure
 plot(time_all,strain_all)
 
 % function to calculate rate for a given stress
-function [rate] = rate_for_stress(cvec)
+function [rate] = rate_for_stress(cvec,user)
 
-    global flowtype eta_s stress_imp
-
-    tauvec = stress_viscoelastic_3D(cvec);
+    tauvec = stress_viscoelastic_3D(cvec,user);
 
     % calculate the rate of deformation
-    if flowtype == 1
-        rate = ( stress_imp - tauvec(2) ) / eta_s;
-    elseif flowtype == 2
-        rate = ( stress_imp  - (tauvec(1)-tauvec(4)) ) / ( 4*eta_s );
-    elseif flowtype == 3
-        rate = ( stress_imp  - (tauvec(1)-tauvec(4)) ) / ( 3*eta_s );
+    if user.flowtype == 1
+        rate = ( user.stress_imp - tauvec(2) ) / user.eta_s;
+    elseif user.flowtype == 2
+        rate = ( user.stress_imp  - (tauvec(1)-tauvec(4)) ) / ( 4*user.eta_s );
+    elseif user.flowtype == 3
+        rate = ( user.stress_imp  - (tauvec(1)-tauvec(4)) ) / ( 3*user.eta_s );
     end
 
 end
