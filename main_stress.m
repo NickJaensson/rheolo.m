@@ -38,7 +38,7 @@ time_all = zeros(1,numsteps);
 deltat = deltat1;
 time = 0.0;
 
-% explicit Euler scheme for first solution
+% time stepping with 2nd-order Runge-Kutta (Heun's method)
 for n=1:numsteps
 
     % update the time
@@ -49,24 +49,19 @@ for n=1:numsteps
       deltat = deltat2;
     end
 
-    % initial step
+    % calculate k1 in Heun's method
     gdot1 = rate_for_stress(cvec);
-
-    % calculate rhs
     rate = gdot1;
-    rhs = rhs_viscoelastic(cvec);
+    k1 = rhs_viscoelastic(cvec);
 
-    % do intermediate step
-    k1 = deltat*rhs;
-    gdot2 = rate_for_stress(cvec+k1);
-
-    % calculate rhs
+    % calculate k2 in Heun's method
+    gdot2 = rate_for_stress(cvec+k1*deltat);
     rate = gdot2;
-    rhs = rhs_viscoelastic(cvec+k1);
+    k2 = rhs_viscoelastic(cvec+k1*deltat);
 
     % do step
+    cvec = cvec + deltat * ( k1 + k2 ) / 2;
     shearstrain = shearstrain + deltat * ( gdot1 + gdot2 ) / 2;
-    cvec = cvec + ( k1 + deltat*rhs ) / 2;
 
     % get viscosity
     tau = stress_viscoelastic_3D(cvec);
