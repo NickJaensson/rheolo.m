@@ -9,6 +9,7 @@ user.alpha = 0.1;
 user.eps = 0.1;
 user.G = 100.0;
 user.alam = 3; % 0: no adapted alam  2: SRM1 model  3: SRM2 model
+user.eta_s = 0.0; % solvent viscosity
 
 % if SRM1 or SRM2
 user.tauy = 10.0; % yield stress
@@ -51,7 +52,9 @@ for n=1:numsteps
 
     % store the viscosity
     taun = stress_viscoelastic_3D(cnp1,user);
-    visc(n+1) = taun(2)/user.rate;
+    solventstress = stress_solvent_3D(user);
+
+    visc(n+1) = (taun(2)+solventstress(2))/user.rate;
   
     % save old values
     cn = cnp1;
@@ -80,12 +83,15 @@ if only_startup == 0
         f = @(cvec)rhs_viscoelastic(cvec,user);
 
         % find solution for the current rate
-        sol = fsolve(f,c0,options);
+        cvec = fsolve(f,c0,options);
         
         % store the viscosity
-        visc(i) = user.G*sol(2)/user.rate;
+        taun = stress_viscoelastic_3D(cvec,user);
+        solventstress = stress_solvent_3D(user);
+
+        visc(i) = (taun(2)+solventstress(2))/user.rate;
         
-        c0 = sol; % store solution als initial guess for next rate
+        c0 = cvec; % store solution als initial guess for next rate
 
     end
 
@@ -93,11 +99,12 @@ if only_startup == 0
     loglog(rates,visc);
 
 %     % Giesekus solution for checking
-%     if model == 2 && alam == 0
-%         eta = G*lam;
-%         chik = (((1+16*alpha*(1-alpha)*(lam*rate)^2)^(0.5) - 1) / ...
-%                       (8*alpha*(1-alpha)*(lam*rate)^2))^0.5;
-%         fk = (1-chik)/(1+(1-2*alpha)*chik);
-%         visc_an = (eta*(1-fk)^2)/(1+(1-2*alpha)*fk)
+%     if user.model == 2 && user.alam == 0
+%         eta = user.G*user.lam;
+%         chik = (((1+16*user.alpha*(1-user.alpha)*(user.lam*user.rate)^2)^(0.5) - 1) / ...
+%                       (8*user.alpha*(1-user.alpha)*(user.lam*user.rate)^2))^0.5;
+%         fk = (1-chik)/(1+(1-2*user.alpha)*chik);
+%         visc_an = (eta*(1-fk)^2)/(1+(1-2*user.alpha)*fk)+user.eta_s
+%         visc(end)
 %     end
 end

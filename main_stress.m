@@ -61,13 +61,13 @@ for n=1:numsteps
     cvec = cvec + deltat * ( k1 + k2 ) / 2;
     shearstrain = shearstrain + deltat * ( gdot1 + gdot2 ) / 2;
 
-    % get viscosity
+    % get the stresses
     tau = stress_viscoelastic_3D(cvec,user);
-    solventstress = user.eta_s * rate_for_stress(cvec,user);
-    shearstress = solventstress + tau(2);
+    user.rate = rate_for_stress(cvec,user);
+    solventstress = stress_solvent_3D(user);
 
     % store the solutions
-    stress_all(n) = shearstress;
+    stress_all(n) = tau(2)+solventstress(2);
     strain_all(n) = shearstrain;
     time_all(n) = time;
 
