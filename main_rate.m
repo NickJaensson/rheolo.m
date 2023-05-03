@@ -1,24 +1,23 @@
 close all; clear
 
-global model flowtype rate mode lam alpha eps G alam tauy Kfac nexp
+global model flowtype rate lam alpha eps G alam tauy Kfac nexp
 
 only_startup = 0;
 
 model = 1; % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
 flowtype = 1; % 1: shear, 2: planar extension, 3: uniaxial extension
-mode = 1; % current mode number
-lam  = [5.0]; %
-alpha = [0.1];
-eps = [0.1];
+lam  = 5.0; %
+alpha = 0.1;
+eps = 0.1;
 G = 100.0;
 alam = 3; % 0: no adapted alam  2: SRM1 model  3: SRM2 model
 
 % if SRM1 or SRM2
-tauy = [10.0]; % yield stress
+tauy = 10.0; % yield stress
 
 % if SRM2
-Kfac = [100.0]; % consistency factor of power law
-nexp = [0.5];   % shear thinning index
+Kfac = 100.0; % consistency factor of power law
+nexp = 0.5;   % shear thinning index
 
 rates = logspace(-3,2);
 numsteps = 1000;

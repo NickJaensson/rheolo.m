@@ -1,6 +1,6 @@
 close all; clear
 
-global model flowtype rate mode lam alpha eps G alam tauy Kfac nexp stress_imp eta_s
+global model flowtype rate lam alpha eps G alam tauy Kfac nexp stress_imp eta_s
 
 numtimesteps1  = 40;    % number of time steps in zone 1
 numtimesteps2  = 1000;  % number of time steps in zone 2
@@ -10,20 +10,19 @@ deltat2 = 1e-3;
 
 model = 1;     % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
 flowtype = 1;  % 1: shear, 2: planar extension, 3: uniaxial extension
-mode = 1;      % current mode number
-lam  = [5.0];  % relaxation time
-alpha = [0.1]; % mobility in the Giesekus model 
-eps = [0.1];   % epsilon in the PTT model
+lam  = 5.0;    % relaxation time
+alpha = 0.1;   % mobility in the Giesekus model 
+eps = 0.1;     % epsilon in the PTT model
 G = 10000.0;   % modulus
 alam = 3;      % 0: no adapted alam  2: SRM1 model  3: SRM2 model
 eta_s = 100.0; % solvent viscosity
 
 % if SRM1 or SRM2
-tauy = [2000.0]; % yield stress
+tauy = 2000.0; % yield stress
 
 % if SRM2
-Kfac = [100.0]; % consistency factor of power law
-nexp = [0.5];   % shear thinning index
+Kfac = 100.0;  % consistency factor of power law
+nexp = 0.5;    % shear thinning index
 
 stress_imp = 2100; % imposed stress level
 

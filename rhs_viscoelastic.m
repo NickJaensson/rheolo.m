@@ -1,6 +1,6 @@
 function [rhs] = rhs_viscoelastic(cvec)
 
-    global model flowtype rate mode lam alpha eps G alam tauy Kfac nexp
+    global model flowtype rate lam alpha eps G alam tauy Kfac nexp
 
     % convenient definition
     I = eye(3);
@@ -27,31 +27,31 @@ function [rhs] = rhs_viscoelastic(cvec)
 
     % calculate the relaxtion part
     if model == 1 % UCM
-        rlxpart = -1/lam(mode)*(cc-I);
+        rlxpart = -1/lam*(cc-I);
     elseif model == 2 % Giesekus
-        rlxpart = -1/lam(mode)*(cc-I+alpha(mode)*(cc-I)*(cc-I));
+        rlxpart = -1/lam*(cc-I+alpha*(cc-I)*(cc-I));
     elseif model == 3 % PTTlin
-        rlxpart = (-1/lam(mode))*(1+eps(mode)*(trace(cc)-3.0))*(cc-I);
+        rlxpart = (-1/lam)*(1+eps*(trace(cc)-3.0))*(cc-I);
     elseif model == 4 % PTTexp
-        rlxpart = (-1/lam(mode))*(exp(eps(mode)*(trace(cc)-3.0)))*(cc-I);
+        rlxpart = (-1/lam)*(exp(eps*(trace(cc)-3.0)))*(cc-I);
     end
 
     % adapt the relaxation part for the alam models
     if any(alam==[1,2,3])
-        taud = von_Mises(G(mode)*(cc-I));
+        taud = von_Mises(G*(cc-I));
     end
 
     if alam == 1 % elastic
         rlxpart = 0.0;
     elseif alam == 2 % Saramito1
-        rlxpart = rlxpart*max([0,(taud-tauy(mode))/taud]);
+        rlxpart = rlxpart*max([0,(taud-tauy)/taud]);
     elseif alam == 3 % Saramito2
-        if taud <= tauy(mode)
+        if taud <= tauy
             fac = 0;
         else
-            fac = 1/((taud/G(mode))*((taud-tauy(mode))/Kfac(mode))^(-1/nexp(mode)));
+            fac = 1/((taud/G)*((taud-tauy)/Kfac)^(-1/nexp));
         end
-        rlxpart = fac*rlxpart*lam(mode);
+        rlxpart = fac*rlxpart*lam;
     end
 
     % determine the complete solution
