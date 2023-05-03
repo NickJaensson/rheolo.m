@@ -18,25 +18,26 @@ user.tauy = 10.0; % yield stress
 user.Kfac = 100.0; % consistency factor of power law
 user.nexp = 0.5;   % shear thinning index
 
-rates = logspace(-3,2);
+user.rates = logspace(-3,2);
 numsteps = 100;
 deltat = 100*max(user.lam)/numsteps; % do startup phase for 100*lambda
-user.rate = rates(1); % or use another rate if only_startup == 1
+user.rate = user.rates(1); % or use another rate if only_startup == 1
 
 % check if transient similation is at first rate for the steady simulations
-if only_startup == 0 && user.rate ~=rates(1)
+if only_startup == 0 && user.rate ~=user.rates(1)
     error('Performing steady simulations but rate ~= to rates(1)')
 end
 
 % estimate first solution from transient
 c0 = [1 0 0 1 0 1];
 cn = c0;
-visc = zeros(1,numsteps+1);
-time = deltat*([1:numsteps+1]-1);
+user.stress_all = zeros(6,numsteps+1);
+user.time_all = deltat*([1:numsteps+1]-1);
 
-% store the viscosity
+% store the stress
 taun = stress_viscoelastic_3D(cn,user);
-visc(1) = taun(2)/user.rate;
+solventstress = stress_solvent_3D(user);
+user.stress_all(:,1) = taun+solventstress;
 
 % time stepping with 2nd-order Runge-Kutta (Heun's method)
 for n=1:numsteps
@@ -50,19 +51,19 @@ for n=1:numsteps
     % do step
     cnp1 = cn + deltat*(k1+k2)/2;
 
-    % store the viscosity
+    % store the stress
     taun = stress_viscoelastic_3D(cnp1,user);
     solventstress = stress_solvent_3D(user);
-
-    visc(n+1) = (taun(2)+solventstress(2))/user.rate;
+    user.stress_all(:,n+1) = taun+solventstress;
   
     % save old values
     cn = cnp1;
 
 end
 
-figure;
-plot(time,visc);
+rheoplot('transient',user);
+
+user.stress_all = zeros(6,length(user.rates));
 
 if only_startup == 0
 
@@ -71,12 +72,12 @@ if only_startup == 0
 
     c0 = cnp1; % initial guess from transient
     
-    visc = zeros(1,length(rates)); % initialize to store viscosity
+    visc = zeros(1,length(user.rates)); % initialize to store viscosity
 
-    for i=1:length(rates)
+    for i=1:length(user.rates)
 
         % update the current rate
-        user.rate = rates(i);
+        user.rate = user.rates(i);
 
         % anonymous function to pass extra parameters to rhs_viscoelastic
         % https://nl.mathworks.com/help/optim/ug/passing-extra-parameters.html)
@@ -89,14 +90,13 @@ if only_startup == 0
         taun = stress_viscoelastic_3D(cvec,user);
         solventstress = stress_solvent_3D(user);
 
-        visc(i) = (taun(2)+solventstress(2))/user.rate;
+        user.stress_all(:,i) = taun+solventstress;
         
         c0 = cvec; % store solution als initial guess for next rate
 
     end
 
-    figure
-    loglog(rates,visc);
+    rheoplot('steady',user);
 
 %     % Giesekus solution for checking
 %     if user.model == 2 && user.alam == 0

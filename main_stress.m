@@ -29,9 +29,9 @@ shearstrain = 0.0;
 
 numsteps = numtimesteps1+numtimesteps2; % total number of steps
 
-stress_all = zeros(1,numsteps);
-strain_all = zeros(1,numsteps);
-time_all = zeros(1,numsteps);
+user.stress_all = zeros(6,numsteps);
+user.strain_all = zeros(1,numsteps);
+user.time_all = zeros(1,numsteps);
 
 deltat = deltat1;
 time = 0.0;
@@ -67,14 +67,13 @@ for n=1:numsteps
     solventstress = stress_solvent_3D(user);
 
     % store the solutions
-    stress_all(n) = tau(2)+solventstress(2);
-    strain_all(n) = shearstrain;
-    time_all(n) = time;
+    user.stress_all(:,n) = tau+solventstress;
+    user.strain_all(n) = shearstrain;
+    user.time_all(n) = time;
 
 end
 
-figure
-plot(time_all,strain_all)
+rheoplot('transient_stress',user)
 
 % function to calculate rate for a given stress
 function [rate] = rate_for_stress(cvec,user)
