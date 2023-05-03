@@ -1,4 +1,4 @@
-# rheolopy
+# rheolom
 
 **Viscoelastic models**
 
