@@ -21,22 +21,43 @@ nexp = 0.5;   % shear thinning index
 
 rates = logspace(-3,2);
 numsteps = 1000;
-deltat = 100*max(lam)/numsteps;
-rate = rates(1); % or use anither rate if only_startup == 1
+deltat = 100*max(lam)/numsteps; % do startup phase for 100*lambda
+rate = rates(1); % or use another rate if only_startup == 1
+
+% check if transient similation is at first rate for the steady simulations
+if only_startup == 0 && rate ~=rates(1)
+    error('Performing steady simulations but rate ~= to rates(1)')
+end
 
 % estimate first solution from transient
 c0 = [1 0 0 1 0 1];
 cn = c0;
-visc = zeros(1,numsteps);
-time = deltat*([1:numsteps]-1);
+visc = zeros(1,numsteps+1);
+time = deltat*([1:numsteps+1]-1);
 
-% explicit Euler scheme for first solution
+% store the viscosity
+taun = stress_viscoelastic_3D(cn);
+visc(1) = taun(2)/rate;
+
+% time stepping with 2nd-order Runge-Kutta (Heun's method)
 for n=1:numsteps
-  dcdt = rhs_viscoelastic(cn);
-  cnp1 = cn + deltat*dcdt;
-  taun = stress_viscoelastic_3D(cn);
-  visc(n) = taun(2)/rate;
-  cn = cnp1;
+
+    % calculate k1 in Heun's method
+    k1 = rhs_viscoelastic(cn);
+
+    % calculate k2 in Heun's method
+    k2 = rhs_viscoelastic(cn+deltat*k1);
+
+    % do step
+    cnp1 = cn + deltat*(k1+k2)/2;
+
+    % store the viscosity
+    taun = stress_viscoelastic_3D(cnp1);
+    visc(n+1) = taun(2)/rate;
+  
+    % save old values
+    cn = cnp1;
+
 end
 
 figure;
