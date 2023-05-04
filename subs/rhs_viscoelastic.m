@@ -1,16 +1,16 @@
-function [rhs] = rhs_viscoelastic(cvec,user)
+function [rhs] = rhs_viscoelastic(cvec,vemodel)
 
     % define the unit tensor for convenience
     I = eye(3);
 
     % calculate the velocity gradient tensor
     L = zeros(3);
-    if user.flowtype == 1
-        L(1,2) = user.rate;
-    elseif user.flowtype == 2
-        L(1,1) = user.rate; L(2,2) = user.rate;
-    elseif user.flowtype == 3
-        L(1,1) = user.rate; L(2,2) = -user.rate/2; L(3,3) = -user.rate/2;
+    if vemodel.flowtype == 1
+        L(1,2) = vemodel.rate;
+    elseif vemodel.flowtype == 2
+        L(1,1) = vemodel.rate; L(2,2) = vemodel.rate;
+    elseif vemodel.flowtype == 3
+        L(1,1) = vemodel.rate; L(2,2) = -vemodel.rate/2; L(3,3) = -vemodel.rate/2;
     end
 
     % unpack the vector
@@ -24,33 +24,33 @@ function [rhs] = rhs_viscoelastic(cvec,user)
     UCDpart = L*cc+cc*transpose(L);
 
     % calculate the relaxtion part
-    if user.model == 1 % UCM
-        rlxpart = -1/user.lam*(cc-I);
-    elseif user.model == 2 % Giesekus
-        rlxpart = -1/user.lam*(cc-I+user.alpha*(cc-I)*(cc-I));
-    elseif user.model == 3 % PTTlin
-        rlxpart = (-1/user.lam)*(1+user.eps*(trace(cc)-3.0))*(cc-I);
-    elseif user.model == 4 % PTTexp
-        rlxpart = (-1/user.lam)*(exp(user.eps*(trace(cc)-3.0)))*(cc-I);
+    if vemodel.model == 1 % UCM
+        rlxpart = -1/vemodel.lam*(cc-I);
+    elseif vemodel.model == 2 % Giesekus
+        rlxpart = -1/vemodel.lam*(cc-I+vemodel.alpha*(cc-I)*(cc-I));
+    elseif vemodel.model == 3 % PTTlin
+        rlxpart = (-1/vemodel.lam)*(1+vemodel.eps*(trace(cc)-3.0))*(cc-I);
+    elseif vemodel.model == 4 % PTTexp
+        rlxpart = (-1/vemodel.lam)*(exp(vemodel.eps*(trace(cc)-3.0)))*(cc-I);
     end
 
     % adapt the relaxation part for the alam models
-    if any(user.alam==[2,3])
-        stress = stress_viscoelastic_3D(cvec,user);
+    if any(vemodel.alam==[2,3])
+        stress = stress_viscoelastic_3D(cvec,vemodel);
         taud = von_Mises(stress);
     end
 
-    if user.alam == 1 % elastic
+    if vemodel.alam == 1 % elastic
         rlxpart = 0.0;
-    elseif user.alam == 2 % Saramito1
-        rlxpart = rlxpart*max([0,(taud-user.tauy)/taud]);
-    elseif user.alam == 3 % Saramito2
-        if taud <= user.tauy
+    elseif vemodel.alam == 2 % Saramito1
+        rlxpart = rlxpart*max([0,(taud-vemodel.tauy)/taud]);
+    elseif vemodel.alam == 3 % Saramito2
+        if taud <= vemodel.tauy
             fac = 0;
         else
-            fac = 1/((taud/user.G)*((taud-user.tauy)/user.Kfac)^(-1/user.nexp));
+            fac = 1/((taud/vemodel.G)*((taud-vemodel.tauy)/vemodel.Kfac)^(-1/vemodel.nexp));
         end
-        rlxpart = fac*rlxpart*user.lam;
+        rlxpart = fac*rlxpart*vemodel.lam;
     end
 
     % determine the complete solution

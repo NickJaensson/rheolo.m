@@ -8,32 +8,32 @@ time1 = 4e-3;
 deltat1 = time1/numtimesteps1;
 deltat2 = 1e-3;
 
-user.model = 1;     % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
-user.flowtype = 1;  % 1: shear, 2: planar extension, 3: uniaxial extension
-user.lam  = 5.0;    % relaxation time
-user.alpha = 0.1;   % mobility in the Giesekus model 
-user.eps = 0.1;     % epsilon in the PTT model
-user.G = 10000.0;   % modulus
-user.alam = 3;      % 0: no adapted alam  2: SRM1 model  3: SRM2 model
-user.eta_s = 100.0; % solvent viscosity
+vemodel.model = 1;     % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
+vemodel.flowtype = 1;  % 1: shear, 2: planar extension, 3: uniaxial extension
+vemodel.lam  = 5.0;    % relaxation time
+vemodel.alpha = 0.1;   % mobility in the Giesekus model 
+vemodel.eps = 0.1;     % epsilon in the PTT model
+vemodel.G = 10000.0;   % modulus
+vemodel.alam = 3;      % 0: no adapted alam  2: SRM1 model  3: SRM2 model
+vemodel.eta_s = 100.0; % solvent viscosity
 
 % if SRM1 or SRM2
-user.tauy = 2000.0; % yield stress
+vemodel.tauy = 2000.0; % yield stress
 
 % if SRM2
-user.Kfac = 100.0;  % consistency factor of power law
-user.nexp = 0.5;    % shear thinning index
+vemodel.Kfac = 100.0;  % consistency factor of power law
+vemodel.nexp = 0.5;    % shear thinning index
 
-user.stress_imp = 2100; % imposed stress level
+vemodel.stress_imp = 2100; % imposed stress level
 
 cvec = [1 0 0 1 0 1];
 shearstrain = 0.0;
 
 numsteps = numtimesteps1+numtimesteps2; % total number of steps
 
-user.stress_all = zeros(6,numsteps);
-user.strain_all = zeros(1,numsteps);
-user.time_all = zeros(1,numsteps);
+vemodel.stress_all = zeros(6,numsteps);
+vemodel.strain_all = zeros(1,numsteps);
+vemodel.time_all = zeros(1,numsteps);
 
 deltat = deltat1;
 time = 0.0;
@@ -50,45 +50,45 @@ for n=1:numsteps
     end
 
     % calculate k1 in Heun's method
-    gdot1 = rate_for_stress(cvec,user);
-    user.rate = gdot1;
-    k1 = rhs_viscoelastic(cvec,user);
+    gdot1 = rate_for_stress(cvec,vemodel);
+    vemodel.rate = gdot1;
+    k1 = rhs_viscoelastic(cvec,vemodel);
 
     % calculate k2 in Heun's method
-    gdot2 = rate_for_stress(cvec+k1*deltat,user);
-    user.rate = gdot2;
-    k2 = rhs_viscoelastic(cvec+k1*deltat,user);
+    gdot2 = rate_for_stress(cvec+k1*deltat,vemodel);
+    vemodel.rate = gdot2;
+    k2 = rhs_viscoelastic(cvec+k1*deltat,vemodel);
 
     % do step
     cvec = cvec + deltat * ( k1 + k2 ) / 2;
     shearstrain = shearstrain + deltat * ( gdot1 + gdot2 ) / 2;
 
     % get the stresses
-    tau = stress_viscoelastic_3D(cvec,user);
-    user.rate = rate_for_stress(cvec,user);
-    solventstress = stress_solvent_3D(user);
+    tau = stress_viscoelastic_3D(cvec,vemodel);
+    vemodel.rate = rate_for_stress(cvec,vemodel);
+    solventstress = stress_solvent_3D(vemodel);
 
     % store the solutions
-    user.stress_all(:,n) = tau+solventstress;
-    user.strain_all(n) = shearstrain;
-    user.time_all(n) = time;
+    vemodel.stress_all(:,n) = tau+solventstress;
+    vemodel.strain_all(n) = shearstrain;
+    vemodel.time_all(n) = time;
 
 end
 
-rheoplot('transient_stress',user)
+rheoplot('transient_stress',vemodel)
 
 % function to calculate rate for a given stress
-function [rate] = rate_for_stress(cvec,user)
+function [rate] = rate_for_stress(cvec,vemodel)
 
-    tauvec = stress_viscoelastic_3D(cvec,user);
+    tauvec = stress_viscoelastic_3D(cvec,vemodel);
 
     % calculate the rate of deformation
-    if user.flowtype == 1
-        rate = ( user.stress_imp - tauvec(2) ) / user.eta_s;
-    elseif user.flowtype == 2
-        rate = ( user.stress_imp  - (tauvec(1)-tauvec(4)) ) / ( 4*user.eta_s );
-    elseif user.flowtype == 3
-        rate = ( user.stress_imp  - (tauvec(1)-tauvec(4)) ) / ( 3*user.eta_s );
+    if vemodel.flowtype == 1
+        rate = ( vemodel.stress_imp - tauvec(2) ) / vemodel.eta_s;
+    elseif vemodel.flowtype == 2
+        rate = ( vemodel.stress_imp  - (tauvec(1)-tauvec(4)) ) / ( 4*vemodel.eta_s );
+    elseif vemodel.flowtype == 3
+        rate = ( vemodel.stress_imp  - (tauvec(1)-tauvec(4)) ) / ( 3*vemodel.eta_s );
     end
 
 end

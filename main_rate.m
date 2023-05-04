@@ -4,68 +4,68 @@ addpath('subs/')
 
 only_startup = 0;
 
-user.model = 1; % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
-user.flowtype = 1; % 1: shear, 2: planar extension, 3: uniaxial extension
-user.lam  = 5.0; %
-user.alpha = 0.1;
-user.eps = 0.1;
-user.G = 100.0;
-user.alam = 3; % 0: no adapted alam  2: SRM1 model  3: SRM2 model
-user.eta_s = 0.0; % solvent viscosity
+vemodel.model = 1; % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
+vemodel.flowtype = 1; % 1: shear, 2: planar extension, 3: uniaxial extension
+vemodel.lam  = 5.0; %
+vemodel.alpha = 0.1;
+vemodel.eps = 0.1;
+vemodel.G = 100.0;
+vemodel.alam = 3; % 0: no adapted alam  2: SRM1 model  3: SRM2 model
+vemodel.eta_s = 0.0; % solvent viscosity
 
 % if SRM1 or SRM2
-user.tauy = 10.0; % yield stress
+vemodel.tauy = 10.0; % yield stress
 
 % if SRM2
-user.Kfac = 100.0; % consistency factor of power law
-user.nexp = 0.5;   % shear thinning index
+vemodel.Kfac = 100.0; % consistency factor of power law
+vemodel.nexp = 0.5;   % shear thinning index
 
-user.rates = logspace(-3,2);
+vemodel.rates = logspace(-3,2);
 numsteps = 100;
-deltat = 100*max(user.lam)/numsteps; % do startup phase for 100*lambda
-user.rate = user.rates(1); % or use another rate if only_startup == 1
+deltat = 100*max(vemodel.lam)/numsteps; % do startup phase for 100*lambda
+vemodel.rate = vemodel.rates(1); % or use another rate if only_startup == 1
 
 % check if transient similation is at first rate for the steady simulations
-if only_startup == 0 && user.rate ~=user.rates(1)
+if only_startup == 0 && vemodel.rate ~=vemodel.rates(1)
     error('Performing steady simulations but rate ~= to rates(1)')
 end
 
 % estimate first solution from transient
 c0 = [1 0 0 1 0 1];
 cn = c0;
-user.stress_all = zeros(6,numsteps+1);
-user.time_all = deltat*([1:numsteps+1]-1);
+vemodel.stress_all = zeros(6,numsteps+1);
+vemodel.time_all = deltat*([1:numsteps+1]-1);
 
 % store the stress
-taun = stress_viscoelastic_3D(cn,user);
-solventstress = stress_solvent_3D(user);
-user.stress_all(:,1) = taun+solventstress;
+taun = stress_viscoelastic_3D(cn,vemodel);
+solventstress = stress_solvent_3D(vemodel);
+vemodel.stress_all(:,1) = taun+solventstress;
 
 % time stepping with 2nd-order Runge-Kutta (Heun's method)
 for n=1:numsteps
 
     % calculate k1 in Heun's method
-    k1 = rhs_viscoelastic(cn,user);
+    k1 = rhs_viscoelastic(cn,vemodel);
 
     % calculate k2 in Heun's method
-    k2 = rhs_viscoelastic(cn+deltat*k1,user);
+    k2 = rhs_viscoelastic(cn+deltat*k1,vemodel);
 
     % do step
     cnp1 = cn + deltat*(k1+k2)/2;
 
     % store the stress
-    taun = stress_viscoelastic_3D(cnp1,user);
-    solventstress = stress_solvent_3D(user);
-    user.stress_all(:,n+1) = taun+solventstress;
+    taun = stress_viscoelastic_3D(cnp1,vemodel);
+    solventstress = stress_solvent_3D(vemodel);
+    vemodel.stress_all(:,n+1) = taun+solventstress;
   
     % save old values
     cn = cnp1;
 
 end
 
-rheoplot('transient',user);
+rheoplot('transient',vemodel);
 
-user.stress_all = zeros(6,length(user.rates));
+vemodel.stress_all = zeros(6,length(vemodel.rates));
 
 if only_startup == 0
 
@@ -74,39 +74,39 @@ if only_startup == 0
 
     c0 = cnp1; % initial guess from transient
     
-    visc = zeros(1,length(user.rates)); % initialize to store viscosity
+    visc = zeros(1,length(vemodel.rates)); % initialize to store viscosity
 
-    for i=1:length(user.rates)
+    for i=1:length(vemodel.rates)
 
         % update the current rate
-        user.rate = user.rates(i);
+        vemodel.rate = vemodel.rates(i);
 
         % anonymous function to pass extra parameters to rhs_viscoelastic
         % https://nl.mathworks.com/help/optim/ug/passing-extra-parameters.html)
-        f = @(cvec)rhs_viscoelastic(cvec,user);
+        f = @(cvec)rhs_viscoelastic(cvec,vemodel);
 
         % find solution for the current rate
         cvec = fsolve(f,c0,options);
         
         % store the viscosity
-        taun = stress_viscoelastic_3D(cvec,user);
-        solventstress = stress_solvent_3D(user);
+        taun = stress_viscoelastic_3D(cvec,vemodel);
+        solventstress = stress_solvent_3D(vemodel);
 
-        user.stress_all(:,i) = taun+solventstress;
+        vemodel.stress_all(:,i) = taun+solventstress;
         
         c0 = cvec; % store solution als initial guess for next rate
 
     end
 
-    rheoplot('steady',user);
+    rheoplot('steady',vemodel);
 
 %     % Giesekus solution for checking
-%     if user.model == 2 && user.alam == 0
-%         eta = user.G*user.lam;
-%         chik = (((1+16*user.alpha*(1-user.alpha)*(user.lam*user.rate)^2)^(0.5) - 1) / ...
-%                       (8*user.alpha*(1-user.alpha)*(user.lam*user.rate)^2))^0.5;
-%         fk = (1-chik)/(1+(1-2*user.alpha)*chik);
-%         visc_an = (eta*(1-fk)^2)/(1+(1-2*user.alpha)*fk)+user.eta_s
+%     if vemodel.model == 2 && vemodel.alam == 0
+%         eta = vemodel.G*vemodel.lam;
+%         chik = (((1+16*vemodel.alpha*(1-vemodel.alpha)*(vemodel.lam*vemodel.rate)^2)^(0.5) - 1) / ...
+%                       (8*vemodel.alpha*(1-vemodel.alpha)*(vemodel.lam*vemodel.rate)^2))^0.5;
+%         fk = (1-chik)/(1+(1-2*vemodel.alpha)*chik);
+%         visc_an = (eta*(1-fk)^2)/(1+(1-2*vemodel.alpha)*fk)+vemodel.eta_s
 %         visc(end)
 %     end
 end
