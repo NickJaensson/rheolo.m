@@ -31,9 +31,9 @@ shearstrain = 0.0;
 
 numsteps = numtimesteps1+numtimesteps2; % total number of steps
 
-vemodel.stress_all = zeros(6,numsteps);
-vemodel.strain_all = zeros(1,numsteps);
-vemodel.time_all = zeros(1,numsteps);
+rheodata.stress_all = zeros(6,numsteps);
+rheodata.strain_all = zeros(1,numsteps);
+rheodata.time_all = zeros(1,numsteps);
 
 deltat = deltat1;
 time = 0.0;
@@ -69,13 +69,13 @@ for n=1:numsteps
     solventstress = stress_solvent_3D(vemodel);
 
     % store the solutions
-    vemodel.stress_all(:,n) = tau+solventstress;
-    vemodel.strain_all(n) = shearstrain;
-    vemodel.time_all(n) = time;
+    rheodata.stress_all(:,n) = tau+solventstress;
+    rheodata.strain_all(n) = shearstrain;
+    rheodata.time_all(n) = time;
 
 end
 
-rheoplot('transient_stress',vemodel)
+rheoplot('transient_stress',rheodata,vemodel)
 
 % function to calculate rate for a given stress
 function [rate] = rate_for_stress(cvec,vemodel)

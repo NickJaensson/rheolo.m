@@ -1,9 +1,9 @@
-function [] = rheoplot(type,vemodel)
+function [] = rheoplot(type,rheodata,vemodel)
 
     if strcmp(type,'transient')
 
         figure; 
-        plot(vemodel.time_all,vemodel.stress_all(2,:)/vemodel.rate,'LineWidth',2)
+        plot(rheodata.time_all,rheodata.stress_all(2,:)/vemodel.rate,'LineWidth',2)
         set(gca,'FontSize',16);
         set(gca,'xscale','linear')
         set(gca,'yscale','linear')
@@ -16,7 +16,7 @@ function [] = rheoplot(type,vemodel)
     elseif strcmp(type,'steady')
 
         figure; 
-        plot(vemodel.rates,vemodel.stress_all(2,:)./vemodel.rates,'LineWidth',2)
+        plot(rheodata.rates_all,rheodata.stress_all(2,:)./rheodata.rates_all,'LineWidth',2)
         set(gca,'FontSize',16);
         set(gca,'xscale','log')
         set(gca,'yscale','log')
@@ -29,7 +29,7 @@ function [] = rheoplot(type,vemodel)
     elseif strcmp(type,'transient_stress')
 
         figure; 
-        plot(vemodel.time_all,vemodel.strain_all,'LineWidth',2)
+        plot(rheodata.time_all,rheodata.strain_all,'LineWidth',2)
         set(gca,'FontSize',16);
         set(gca,'xscale','linear')
         set(gca,'yscale','linear')
