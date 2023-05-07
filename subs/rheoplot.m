@@ -79,6 +79,29 @@ function [] = rheoplot(type,rheodata,vemodel,flowtype)
 
         end
 
-    end
+    elseif flowtype == 2 || flowtype == 3  % uni/bi-extensional flow
 
+        if strcmp(type,'startup')
+
+            figure; 
+            plot(time,(sxx-syy)/rheodata.rate_for_startup,'LineWidth',2)
+            set(gca,'xscale','linear'); set(gca,'yscale','linear'); set(gca,'FontSize',16);
+            title('Transient extensional viscosity $\eta_{\rm E}(t)$','Interpreter','LaTeX','FontSize',24)
+            xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+            ylabel('$ \eta_{\rm E} $','interpreter', 'LaTeX','FontSize',28); % y-axis label
+
+        elseif strcmp(type,'steady')
+
+            figure; 
+            plot(rheodata.rates,(sxx-syy)./rheodata.rates,'LineWidth',2)
+            set(gca,'xscale','log'); set(gca,'yscale','log'); set(gca,'FontSize',16);
+            title('Steady extensional viscosity $\eta_{\rm E}(\dot{\epsilon})$','Interpreter','LaTeX','FontSize',24)
+            xlabel('$\dot{\epsilon}$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+            ylabel('$ \eta_{\rm E} $','interpreter', 'LaTeX','FontSize',28); % y-axis label
+
+         elseif strcmp(type,'startup_stress')
+    
+            error('not implemented yet')
+
+         end
 end

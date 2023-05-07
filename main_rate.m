@@ -103,7 +103,7 @@ if only_startup == 0
     rheoplot('steady',rheodata,vemodel,flowtype);
 
     % Giesekus solution for checking
-    if vemodel.model == 2 && vemodel.alam == 0
+    if vemodel.model == 2 && vemodel.alam == 0 && flowtype == 1
         eta = vemodel.G*vemodel.lam;
         chik = (((1+16*vemodel.alpha*(1-vemodel.alpha)*(vemodel.lam*rheodata.rates(end))^2)^(0.5) - 1) / ...
                       (8*vemodel.alpha*(1-vemodel.alpha)*(vemodel.lam*rheodata.rates(end))^2))^0.5;
