@@ -67,7 +67,7 @@ for n=1:numsteps
 
 end
 
-% rheoplot('startup',rheodata,vemodel,flowtype);
+if only_startup == 1; rheoplot('startup',rheodata,vemodel,flowtype); end
 
 rheodata.stress = zeros(6,length(rheodata.rates));
 
