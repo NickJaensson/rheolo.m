@@ -6,7 +6,7 @@ function [L] = fill_L(vemodel,rate,flowtype)
     if flowtype == 1
         L(1,2) = rate;
     elseif flowtype == 2
-        L(1,1) = rate; L(2,2) = rate;
+        L(1,1) = rate; L(2,2) = -rate;
     elseif flowtype == 3
         L(1,1) = rate; L(2,2) = -rate/2; L(3,3) = -rate/2;
     end
