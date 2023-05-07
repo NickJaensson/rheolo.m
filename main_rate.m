@@ -20,26 +20,26 @@ vemodel.tauy = 10.0; % yield stress
 vemodel.Kfac = 100.0; % consistency factor of power law
 vemodel.nexp = 0.5;   % shear thinning index
 
-rheodata.rates_all = logspace(-3,2);
+rheodata.rates = logspace(-3,2);
 numsteps = 100;
 deltat = 100*max(vemodel.lam)/numsteps; % do startup phase for 100*lambda
-vemodel.rate = rheodata.rates_all(1); % or use another rate if only_startup == 1
+vemodel.rate = rheodata.rates(1); % or use another rate if only_startup == 1
 
 % check if transient similation is at first rate for the steady simulations
-if only_startup == 0 && vemodel.rate ~=rheodata.rates_all(1)
+if only_startup == 0 && vemodel.rate ~=rheodata.rates(1)
     error('Performing steady simulations but rate ~= to rates(1)')
 end
 
 % estimate first solution from transient
 c0 = [1 0 0 1 0 1];
 cn = c0;
-rheodata.stress_all = zeros(6,numsteps+1);
-rheodata.time_all = deltat*([1:numsteps+1]-1);
+rheodata.stress = zeros(6,numsteps+1);
+rheodata.time = deltat*([1:numsteps+1]-1);
 
 % store the stress
 taun = stress_viscoelastic_3D(cn,vemodel);
 solventstress = stress_solvent_3D(vemodel);
-rheodata.stress_all(:,1) = taun+solventstress;
+rheodata.stress(:,1) = taun+solventstress;
 
 % time stepping with 2nd-order Runge-Kutta (Heun's method)
 for n=1:numsteps
@@ -56,7 +56,7 @@ for n=1:numsteps
     % store the stress
     taun = stress_viscoelastic_3D(cnp1,vemodel);
     solventstress = stress_solvent_3D(vemodel);
-    rheodata.stress_all(:,n+1) = taun+solventstress;
+    rheodata.stress(:,n+1) = taun+solventstress;
   
     % save old values
     cn = cnp1;
@@ -65,7 +65,7 @@ end
 
 rheoplot('transient',rheodata,vemodel);
 
-rheodata.stress_all = zeros(6,length(rheodata.rates_all));
+rheodata.stress = zeros(6,length(rheodata.rates));
 
 if only_startup == 0
 
@@ -74,12 +74,12 @@ if only_startup == 0
 
     c0 = cnp1; % initial guess from transient
     
-    visc = zeros(1,length(rheodata.rates_all)); % initialize to store viscosity
+    visc = zeros(1,length(rheodata.rates)); % initialize to store viscosity
 
-    for i=1:length(rheodata.rates_all)
+    for i=1:length(rheodata.rates)
 
         % update the current rate
-        vemodel.rate = rheodata.rates_all(i);
+        vemodel.rate = rheodata.rates(i);
 
         % anonymous function to pass extra parameters to rhs_viscoelastic
         % https://nl.mathworks.com/help/optim/ug/passing-extra-parameters.html)
@@ -92,7 +92,7 @@ if only_startup == 0
         taun = stress_viscoelastic_3D(cvec,vemodel);
         solventstress = stress_solvent_3D(vemodel);
 
-        rheodata.stress_all(:,i) = taun+solventstress;
+        rheodata.stress(:,i) = taun+solventstress;
         
         c0 = cvec; % store solution als initial guess for next rate
 
@@ -107,6 +107,6 @@ if only_startup == 0
 %                       (8*vemodel.alpha*(1-vemodel.alpha)*(vemodel.lam*vemodel.rate)^2))^0.5;
 %         fk = (1-chik)/(1+(1-2*vemodel.alpha)*chik);
 %         visc_an = (eta*(1-fk)^2)/(1+(1-2*vemodel.alpha)*fk)+vemodel.eta_s
-%         rheodata.stress_all(2,end)/rheodata.rates_all(end)
+%         rheodata.stress(2,end)/rheodata.rates(end)
 %     end
 end

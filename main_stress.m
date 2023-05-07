@@ -31,9 +31,9 @@ shearstrain = 0.0;
 
 numsteps = numtimesteps1+numtimesteps2; % total number of steps
 
-rheodata.stress_all = zeros(6,numsteps);
-rheodata.strain_all = zeros(1,numsteps);
-rheodata.time_all = zeros(1,numsteps);
+rheodata.stress = zeros(6,numsteps);
+rheodata.strain = zeros(1,numsteps);
+rheodata.time = zeros(1,numsteps);
 
 deltat = deltat1;
 time = 0.0;
@@ -69,9 +69,9 @@ for n=1:numsteps
     solventstress = stress_solvent_3D(vemodel);
 
     % store the solutions
-    rheodata.stress_all(:,n) = tau+solventstress;
-    rheodata.strain_all(n) = shearstrain;
-    rheodata.time_all(n) = time;
+    rheodata.stress(:,n) = tau+solventstress;
+    rheodata.strain(n) = shearstrain;
+    rheodata.time(n) = time;
 
 end
 
