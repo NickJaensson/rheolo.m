@@ -76,7 +76,7 @@ for n=1:numsteps
 
 end
 
-rheoplot('startup_stress',rheodata,vemodel)
+rheoplot('startup_stress',rheodata,vemodel,flowtype)
 
 % function to calculate rate for a given stress
 function [rate] = rate_for_stress(cvec,vemodel,rheodata,flowtype)

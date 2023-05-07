@@ -5,12 +5,12 @@ addpath('subs/')
 only_startup = 0; % if 0: stop after performing the startup simulation
 flowtype = 1; % 1: shear, 2: planar extension, 3: uniaxial extension
 
-vemodel.model = 1; % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
+vemodel.model = 2; % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
 vemodel.lam  = 5.0; %
 vemodel.alpha = 0.1;
 vemodel.eps = 0.1;
 vemodel.G = 100.0;
-vemodel.alam = 3; % 0:no adapted alam 1:elastic 2:SRM1 model  3:SRM2 model
+vemodel.alam = 2; % 0:no adapted alam 1:elastic 2:SRM1 model  3:SRM2 model
 vemodel.eta_s = 0.0; % solvent viscosity
 
 % if SRM1 or SRM2
@@ -67,7 +67,7 @@ for n=1:numsteps
 
 end
 
-rheoplot('startup',rheodata,vemodel);
+% rheoplot('startup',rheodata,vemodel,flowtype);
 
 rheodata.stress = zeros(6,length(rheodata.rates));
 
@@ -100,7 +100,7 @@ if only_startup == 0
 
     end
 
-    rheoplot('steady',rheodata,vemodel);
+    rheoplot('steady',rheodata,vemodel,flowtype);
 
     % Giesekus solution for checking
     if vemodel.model == 2 && vemodel.alam == 0
