@@ -2,6 +2,8 @@ close all; clear
 
 addpath('subs/')
 
+flowtype = 1;  % 1: shear, 2: planar extension, 3: uniaxial extension
+
 numtimesteps1  = 40;    % number of time steps in zone 1
 numtimesteps2  = 1000;  % number of time steps in zone 2
 time1 = 4e-3;
@@ -9,7 +11,6 @@ deltat1 = time1/numtimesteps1;
 deltat2 = 1e-3;
 
 vemodel.model = 1;     % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
-vemodel.flowtype = 1;  % 1: shear, 2: planar extension, 3: uniaxial extension
 vemodel.lam  = 5.0;    % relaxation time
 vemodel.alpha = 0.1;   % mobility in the Giesekus model 
 vemodel.eps = 0.1;     % epsilon in the PTT model
@@ -24,7 +25,7 @@ vemodel.tauy = 2000.0; % yield stress
 vemodel.Kfac = 100.0;  % consistency factor of power law
 vemodel.nexp = 0.5;    % shear thinning index
 
-vemodel.stress_imp = 2100; % imposed stress level
+rheodata.stress_imp = 2100; % imposed stress level
 
 cvec = [1 0 0 1 0 1];
 shearstrain = 0.0;
@@ -50,14 +51,14 @@ for n=1:numsteps
     end
 
     % calculate k1 in Heun's method
-    gdot1 = rate_for_stress(cvec,vemodel);
-    vemodel.rate = gdot1;
-    k1 = rhs_viscoelastic(cvec,vemodel);
+    gdot1 = rate_for_stress(cvec,vemodel,rheodata,flowtype);
+    L = fill_L(vemodel,gdot1,flowtype);
+    k1 = rhs_viscoelastic(cvec,L,vemodel);
 
     % calculate k2 in Heun's method
-    gdot2 = rate_for_stress(cvec+k1*deltat,vemodel);
-    vemodel.rate = gdot2;
-    k2 = rhs_viscoelastic(cvec+k1*deltat,vemodel);
+    gdot2 = rate_for_stress(cvec+k1*deltat,vemodel,rheodata,flowtype);
+    L = fill_L(vemodel,gdot1,flowtype);
+    k2 = rhs_viscoelastic(cvec+k1*deltat,L,vemodel);
 
     % do step
     cvec = cvec + deltat * ( k1 + k2 ) / 2;
@@ -65,8 +66,8 @@ for n=1:numsteps
 
     % get the stresses
     tau = stress_viscoelastic_3D(cvec,vemodel);
-    vemodel.rate = rate_for_stress(cvec,vemodel);
-    solventstress = stress_solvent_3D(vemodel);
+    gdotnp1 = rate_for_stress(cvec,vemodel,rheodata,flowtype);
+    solventstress = stress_solvent_3D(vemodel,gdotnp1,flowtype);
 
     % store the solutions
     rheodata.stress(:,n) = tau+solventstress;
@@ -75,20 +76,20 @@ for n=1:numsteps
 
 end
 
-rheoplot('transient_stress',rheodata,vemodel)
+rheoplot('startup_stress',rheodata,vemodel)
 
 % function to calculate rate for a given stress
-function [rate] = rate_for_stress(cvec,vemodel)
+function [rate] = rate_for_stress(cvec,vemodel,rheodata,flowtype)
 
     tauvec = stress_viscoelastic_3D(cvec,vemodel);
 
     % calculate the rate of deformation
-    if vemodel.flowtype == 1
-        rate = ( vemodel.stress_imp - tauvec(2) ) / vemodel.eta_s;
-    elseif vemodel.flowtype == 2
-        rate = ( vemodel.stress_imp  - (tauvec(1)-tauvec(4)) ) / ( 4*vemodel.eta_s );
-    elseif vemodel.flowtype == 3
-        rate = ( vemodel.stress_imp  - (tauvec(1)-tauvec(4)) ) / ( 3*vemodel.eta_s );
+    if flowtype == 1
+        rate = ( rheodata.stress_imp - tauvec(2) ) / vemodel.eta_s;
+    elseif flowtype == 2
+        rate = ( rheodata.stress_imp  - (tauvec(1)-tauvec(4)) ) / ( 4*vemodel.eta_s );
+    elseif flowtype == 3
+        rate = ( rheodata.stress_imp  - (tauvec(1)-tauvec(4)) ) / ( 3*vemodel.eta_s );
     end
 
 end

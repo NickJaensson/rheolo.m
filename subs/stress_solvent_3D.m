@@ -1,15 +1,8 @@
 % calculate the solvent stress
-function [tauvec] = stress_solvent_3D(vemodel)
+function [tauvec] = stress_solvent_3D(vemodel,rate,flowtype)
 
     % calculate the velocity gradient tensor
-    L = zeros(3);
-    if vemodel.flowtype == 1
-        L(1,2) = vemodel.rate;
-    elseif vemodel.flowtype == 2
-        L(1,1) = vemodel.rate; L(2,2) = vemodel.rate;
-    elseif vemodel.flowtype == 3
-        L(1,1) = vemodel.rate; L(2,2) = -vemodel.rate/2; L(3,3) = -vemodel.rate/2;
-    end
+    L = fill_L(vemodel,rate,flowtype);
 
     sol = vemodel.eta_s * (L+transpose(L));
 

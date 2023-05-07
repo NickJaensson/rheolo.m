@@ -1,17 +1,7 @@
-function [rhs] = rhs_viscoelastic(cvec,vemodel)
+function [rhs] = rhs_viscoelastic(cvec,L,vemodel)
 
     % define the unit tensor for convenience
     I = eye(3);
-
-    % calculate the velocity gradient tensor
-    L = zeros(3);
-    if vemodel.flowtype == 1
-        L(1,2) = vemodel.rate;
-    elseif vemodel.flowtype == 2
-        L(1,1) = vemodel.rate; L(2,2) = vemodel.rate;
-    elseif vemodel.flowtype == 3
-        L(1,1) = vemodel.rate; L(2,2) = -vemodel.rate/2; L(3,3) = -vemodel.rate/2;
-    end
 
     % unpack the vector
     cxx = cvec(1); cxy = cvec(2); cxz = cvec(3); 
