@@ -10,7 +10,7 @@ vemodel.lam  = 5.0; %
 vemodel.alpha = 0.1;
 vemodel.eps = 0.1;
 vemodel.G = 100.0;
-vemodel.alam = 3; % 0: no adapted alam  2: SRM1 model  3: SRM2 model
+vemodel.alam = 3; % 0:no adapted alam 1:elastic 2:SRM1 model  3:SRM2 model
 vemodel.eta_s = 0.0; % solvent viscosity
 
 % if SRM1 or SRM2
@@ -107,6 +107,6 @@ if only_startup == 0
 %                       (8*vemodel.alpha*(1-vemodel.alpha)*(vemodel.lam*vemodel.rate)^2))^0.5;
 %         fk = (1-chik)/(1+(1-2*vemodel.alpha)*chik);
 %         visc_an = (eta*(1-fk)^2)/(1+(1-2*vemodel.alpha)*fk)+vemodel.eta_s
-%         visc(end)
+%         rheodata.stress_all(2,end)/rheodata.rates_all(end)
 %     end
 end
