@@ -36,7 +36,7 @@ end
 c0 = [1 0 0 1 0 1];
 cn = c0;
 rheodata.stress = zeros(6,numsteps+1);
-rheodata.time = deltat*([1:numsteps+1]-1);
+rheodata.time = deltat*((1:numsteps+1)-1);
 
 % store the stress
 taun = stress_viscoelastic_3D(cn,vemodel);
