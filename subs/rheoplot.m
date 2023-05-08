@@ -101,7 +101,14 @@ function [] = rheoplot(type,rheodata,vemodel,flowtype)
 
          elseif strcmp(type,'startup_stress')
     
-            error('not implemented yet')
+            figure; 
+            plot(rheodata.time,rheodata.strain,'LineWidth',2)
+            set(gca,'FontSize',16);
+            set(gca,'xscale','linear')
+            set(gca,'yscale','linear')
+            title('Transient elongational strain for imposed shear stress','Interpreter','LaTeX','FontSize',24)
+            xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+            ylabel('$\epsilon$','interpreter', 'LaTeX','FontSize',28); % y-axis label
 
          end
 end
