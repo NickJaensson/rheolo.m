@@ -26,6 +26,8 @@ vemodel.Kfac = 100.0;  % consistency factor of power law
 vemodel.nexp = 0.5;    % shear thinning index
 
 rheodata.stress_imp = 2100; % imposed stress level
+                            % stress_xy             for shear flow (flowtype 1)
+                            % stress_xx - stress_yy for elongation flow (flowtype 2 & 3)
 
 cvec = [1 0 0 1 0 1];
 shearstrain = 0.0;
@@ -51,23 +53,23 @@ for n=1:numsteps
     end
 
     % calculate k1 in Heun's method
-    gdot1 = rate_for_stress(cvec,vemodel,rheodata,flowtype);
-    L = fill_L(vemodel,gdot1,flowtype);
+    rate1 = rate_for_stress(cvec,vemodel,rheodata,flowtype);
+    L = fill_L(vemodel,rate1,flowtype);
     k1 = rhs_viscoelastic(cvec,L,vemodel);
 
     % calculate k2 in Heun's method
-    gdot2 = rate_for_stress(cvec+k1*deltat,vemodel,rheodata,flowtype);
-    L = fill_L(vemodel,gdot1,flowtype);
+    rate2 = rate_for_stress(cvec+k1*deltat,vemodel,rheodata,flowtype);
+    L = fill_L(vemodel,rate1,flowtype);
     k2 = rhs_viscoelastic(cvec+k1*deltat,L,vemodel);
 
     % do step
     cvec = cvec + deltat * ( k1 + k2 ) / 2;
-    shearstrain = shearstrain + deltat * ( gdot1 + gdot2 ) / 2;
+    shearstrain = shearstrain + deltat * ( rate1 + rate2 ) / 2;
 
     % get the stresses
     tau = stress_viscoelastic_3D(cvec,vemodel);
-    gdotnp1 = rate_for_stress(cvec,vemodel,rheodata,flowtype);
-    solventstress = stress_solvent_3D(vemodel,gdotnp1,flowtype);
+    ratenp1 = rate_for_stress(cvec,vemodel,rheodata,flowtype);
+    solventstress = stress_solvent_3D(vemodel,ratenp1,flowtype);
 
     % store the solutions
     rheodata.stress(:,n) = tau+solventstress;
