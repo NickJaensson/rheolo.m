@@ -86,10 +86,14 @@ if only_startup == 0
         % https://nl.mathworks.com/help/optim/ug/passing-extra-parameters.html)
         L = fill_L(vemodel,rheodata.rates(i),flowtype);
         f = @(cvec)rhs_viscoelastic(cvec,L,vemodel);
-
-        % find solution for the current rate
-        cvec = fsolve(f,c0,options);
         
+        % find solution for the current rate
+        [cvec, ~, exitflag, ~] = fsolve(f,c0,options);
+
+        if exitflag ~= 1
+            error('Error: no solution was found by fsolve');
+        end
+
         % store the viscosity
         taun = stress_viscoelastic_3D(cvec,vemodel);
         solventstress = stress_solvent_3D(vemodel,rheodata.rates(i),flowtype);
