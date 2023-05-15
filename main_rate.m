@@ -6,10 +6,10 @@ only_startup = 0; % if 0: stop after performing the startup simulation
 flowtype = 1; % 1: shear, 2: planar extension, 3: uniaxial extension
 
 vemodel.model = 2; % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
-vemodel.lam  = 5.0; %
+vemodel.lam  = 0.1; %
 vemodel.alpha = 0.1;
 vemodel.eps = 0.1;
-vemodel.G = 100.0;
+vemodel.G = 10.0;
 vemodel.alam = 2; % 0:no adapted alam 1:elastic 2:SRM1 model  3:SRM2 model
 vemodel.eta_s = 0.0; % solvent viscosity
 
@@ -20,16 +20,16 @@ vemodel.tauy = 10.0; % yield stress
 vemodel.Kfac = 100.0; % consistency factor of power law
 vemodel.nexp = 0.5;   % shear thinning index
 
-rheodata.rates = logspace(-3,2);
-rheodata.rate_for_startup = rheodata.rates(1); % or use another rate if only_startup == 1
+rheodata.rates = logspace(-3,2,500);
+rheodata.rate_for_startup = rheodata.rates(end); % or use another rate if only_startup == 1
 
 % parameters for the startup problem
-numsteps = 100;
-deltat = 100*max(vemodel.lam)/numsteps; % do startup phase for 100*lambda
+time_startup = 40*vemodel.lam;
+numsteps = 1000; deltat = time_startup/numsteps;
 
 % check if transient similation is at first rate for the steady simulations
-if only_startup == 0 && rheodata.rate_for_startup ~=rheodata.rates(1)
-    error('Performing steady simulations but rate ~= to rates(1)')
+if only_startup == 0 && rheodata.rate_for_startup ~=rheodata.rates(end)
+    error('Performing steady simulations but rate ~= to rates(end)')
 end
 
 % estimate first solution from transient
@@ -74,19 +74,20 @@ rheodata.stress = zeros(6,length(rheodata.rates));
 if only_startup == 0
 
     % options for fsolve
-    options = optimoptions('fsolve','Display','off','Algorithm','levenberg-marquardt');
+    options = optimoptions('fsolve','Display','off','Algorithm','trust-region-dogleg','FunctionTolerance',1e-6);
+    %options = optimoptions('fsolve','Display','off','Algorithm','levenberg-marquardt','FunctionTolerance',1e-6);
 
     c0 = cnp1; % initial guess from transient
     
     visc = zeros(1,length(rheodata.rates)); % initialize to store viscosity
 
-    for i=1:length(rheodata.rates)
+    for i=length(rheodata.rates):-1:1
 
         % anonymous function to pass extra parameters to rhs_viscoelastic
         % https://nl.mathworks.com/help/optim/ug/passing-extra-parameters.html)
         L = fill_L(vemodel,rheodata.rates(i),flowtype);
         f = @(cvec)rhs_viscoelastic(cvec,L,vemodel);
-        
+
         % find solution for the current rate
         [cvec, ~, exitflag, ~] = fsolve(f,c0,options);
 
