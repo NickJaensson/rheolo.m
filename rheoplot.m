@@ -111,4 +111,4 @@ function [] = rheoplot(type,rheodata,vemodel,flowtype)
             ylabel('$\epsilon$','interpreter', 'LaTeX','FontSize',28); % y-axis label
 
          end
-end
+    end
