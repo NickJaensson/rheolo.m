@@ -1,4 +1,4 @@
-function [] = rheoplot(type,rheodata,vemodel,flowtype)
+function [] = rheoplot(timetype,rheodata,vemodel,flowtype,plottype)
 
     time = rheodata.time;
     sxx = rheodata.stress(1,:); sxy = rheodata.stress(2,:); sxz = rheodata.stress(3,:);
@@ -6,109 +6,182 @@ function [] = rheoplot(type,rheodata,vemodel,flowtype)
 
     if flowtype == 1 % simple shear
 
-        if strcmp(type,'startup')
+        if strcmp(timetype,'startup')
+
+            if strcmp(plottype,'visc')
     
-            figure; 
-            plot(time,sxy/rheodata.rate_for_startup,'LineWidth',2)
-            set(gca,'xscale','linear'); set(gca,'yscale','linear'); set(gca,'FontSize',16);
-            title('Transient shear viscosity $\eta(t)$','Interpreter','LaTeX','FontSize',24)
-            xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
-            ylabel('$ \eta $','interpreter', 'LaTeX','FontSize',28); % y-axis label
+                figure; 
+                plot(time,sxy/rheodata.rate_for_startup,'LineWidth',2)
+                set(gca,'xscale','linear'); set(gca,'yscale','linear'); set(gca,'FontSize',16);
+                title('Transient shear viscosity $\eta(t)$','Interpreter','LaTeX','FontSize',24)
+                xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+                ylabel('$ \eta $','interpreter', 'LaTeX','FontSize',28); % y-axis label
+        
+                figure; 
+                plot(time,(sxx-syy)/rheodata.rate_for_startup^2,'LineWidth',2)
+                set(gca,'xscale','linear'); set(gca,'yscale','linear'); set(gca,'FontSize',16);
+                title('Transient first normal stress coefficient $\Psi_{1}(t)$','Interpreter','LaTeX','FontSize',24)
+                xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+                ylabel('$ \Psi_{1}$','interpreter', 'LaTeX','FontSize',28); % y-axis label  
+        
+                figure; 
+                plot(time,(sxx-syy)./sxy,'LineWidth',2)
+                set(gca,'xscale','linear'); set(gca,'yscale','linear'); set(gca,'FontSize',16);
+                title('Transient stress ratio $S(t)$','Interpreter','LaTeX','FontSize',24)
+                xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+                ylabel('$S$','interpreter', 'LaTeX','FontSize',28); % y-axis label
+        
+                figure; 
+                plot(time,(syy-szz)/rheodata.rate_for_startup^2,'LineWidth',2)
+                set(gca,'xscale','linear'); set(gca,'yscale','linear'); set(gca,'FontSize',16);
+                title('Transient second normal stress coefficient $\Psi_{2}(t)$','Interpreter','LaTeX','FontSize',24)
+                xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+                ylabel('$ \Psi_{2}$','interpreter', 'LaTeX','FontSize',28); % y-axis label
+
+            elseif strcmp(plottype,'stress')
+
+                figure; 
+                plot(time,sxy,'LineWidth',2); hold on;                
+                plot(time,sxx-syy,'LineWidth',2);
+                plot(time,syy-szz,'LineWidth',2)
+                set(gca,'xscale','linear'); set(gca,'yscale','linear'); set(gca,'FontSize',16);
+                title('Transient stress','Interpreter','LaTeX','FontSize',24)                
+                xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+                ylabel('$ \tau $','interpreter', 'LaTeX','FontSize',28); % y-axis label
+                legend('$\tau_{xy}$','$N_1 = \tau_{xx}-\tau_{yy}$','$N_2 = \tau_{yy}-\tau_{zz}$','Interpreter','LaTeX')
+
+            end
     
-            figure; 
-            plot(time,(sxx-syy)/rheodata.rate_for_startup^2,'LineWidth',2)
-            set(gca,'xscale','linear'); set(gca,'yscale','linear'); set(gca,'FontSize',16);
-            title('Transient first normal stress coefficient $\Psi_{1}(t)$','Interpreter','LaTeX','FontSize',24)
-            xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
-            ylabel('$ \Psi_{1}$','interpreter', 'LaTeX','FontSize',28); % y-axis label  
+        elseif strcmp(timetype,'steady')
     
-            figure; 
-            plot(time,(sxx-syy)./sxy,'LineWidth',2)
-            set(gca,'xscale','linear'); set(gca,'yscale','linear'); set(gca,'FontSize',16);
-            title('Transient stress ratio $S(t)$','Interpreter','LaTeX','FontSize',24)
-            xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
-            ylabel('$S$','interpreter', 'LaTeX','FontSize',28); % y-axis label
+            if strcmp(plottype,'visc')
+
+                figure; 
+                plot(rheodata.rates,sxy./rheodata.rates,'LineWidth',2)
+                set(gca,'FontSize',16); set(gca,'xscale','log'); set(gca,'yscale','log')
+                title('Steady shear viscosity $\eta(\dot{\gamma})$','Interpreter','LaTeX','FontSize',24)
+                xlabel('$\dot{\gamma}$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+                ylabel('$ \eta $','interpreter', 'LaTeX','FontSize',28); % y-axis label
+        
+                figure; 
+                plot(rheodata.rates,(sxx-syy)./rheodata.rates.^2,'LineWidth',2)
+                set(gca,'xscale','log'); set(gca,'yscale','log'); set(gca,'FontSize',16);
+                title('Steady first normal stress coefficient $\Psi_{1}(\dot{\gamma})$','Interpreter','LaTeX','FontSize',24)
+                xlabel('$\dot{\gamma}$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+                ylabel('$ \Psi_{1}$','interpreter', 'LaTeX','FontSize',28); % y-axis label  
+        
+                figure; 
+                plot(rheodata.rates,(sxx-syy)./sxy,'LineWidth',2)
+                set(gca,'xscale','log'); set(gca,'yscale','log'); set(gca,'FontSize',16);
+                title('Steady stress ratio $S(\dot{\gamma})$','Interpreter','LaTeX','FontSize',24)
+                xlabel('$\dot{\gamma}$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+                ylabel('$S$','interpreter', 'LaTeX','FontSize',28); % y-axis label
+        
+                figure; 
+                plot(rheodata.rates,(syy-szz)./rheodata.rates.^2,'LineWidth',2)
+                set(gca,'xscale','log'); set(gca,'yscale','log'); set(gca,'FontSize',16);
+                title('Steady second normal stress coefficient $\Psi_{2}(\dot{\gamma})$','Interpreter','LaTeX','FontSize',24)
+                xlabel('$\dot{\gamma}$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+                ylabel('$ \Psi_{2}$','interpreter', 'LaTeX','FontSize',28); % y-axis label
+
+            elseif strcmp(plottype,'stress')
+
+                figure; 
+                plot(rheodata.rates,sxy,'LineWidth',2); hold on;                
+                plot(rheodata.rates,sxx-syy,'LineWidth',2);
+                N2_negative = any(syy-szz<0);
+                if ~N2_negative
+                    plot(rheodata.rates,syy-szz,'LineWidth',2);
+                end
+                set(gca,'xscale','log'); set(gca,'yscale','log'); set(gca,'FontSize',16);
+                title('Steady-state stress','Interpreter','LaTeX','FontSize',24)                
+                xlabel('$\dot{\gamma}$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+                ylabel('$\tau$','interpreter', 'LaTeX','FontSize',28); % y-axis label
+                if N2_negative
+                    legend('$\tau_{xy}$','$N_1 = \tau_{xx}-\tau_{yy}$','Interpreter','LaTeX')
+                else
+                    legend('$\tau_{xy}$','$N_1 = \tau_{xx}-\tau_{yy}$','$N_2 = \tau_{yy}-\tau_{zz}$','Interpreter','LaTeX')
+                end
+
+            end
     
-            figure; 
-            plot(time,(syy-szz)/rheodata.rate_for_startup^2,'LineWidth',2)
-            set(gca,'xscale','linear'); set(gca,'yscale','linear'); set(gca,'FontSize',16);
-            title('Transient second normal stress coefficient $\Psi_{2}(t)$','Interpreter','LaTeX','FontSize',24)
-            xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
-            ylabel('$ \Psi_{2}$','interpreter', 'LaTeX','FontSize',28); % y-axis label          
+        elseif strcmp(timetype,'startup_stress')
     
-        elseif strcmp(type,'steady')
-    
-            figure; 
-            plot(rheodata.rates,sxy./rheodata.rates,'LineWidth',2)
-            set(gca,'FontSize',16); set(gca,'xscale','log'); set(gca,'yscale','log')
-            title('Steady shear viscosity $\eta(\dot{\gamma})$','Interpreter','LaTeX','FontSize',24)
-            xlabel('$\dot{\gamma}$','interpreter', 'LaTeX','FontSize',28); % x-axis label
-            ylabel('$ \eta $','interpreter', 'LaTeX','FontSize',28); % y-axis label
-    
-            figure; 
-            plot(rheodata.rates,(sxx-syy)./rheodata.rates.^2,'LineWidth',2)
-            set(gca,'xscale','log'); set(gca,'yscale','log'); set(gca,'FontSize',16);
-            title('Steady first normal stress coefficient $\Psi_{1}(\dot{\gamma})$','Interpreter','LaTeX','FontSize',24)
-            xlabel('$\dot{\gamma}$','interpreter', 'LaTeX','FontSize',28); % x-axis label
-            ylabel('$ \Psi_{1}$','interpreter', 'LaTeX','FontSize',28); % y-axis label  
-    
-            figure; 
-            plot(rheodata.rates,(sxx-syy)./sxy,'LineWidth',2)
-            set(gca,'xscale','log'); set(gca,'yscale','log'); set(gca,'FontSize',16);
-            title('Steady stress ratio $S(\dot{\gamma})$','Interpreter','LaTeX','FontSize',24)
-            xlabel('$\dot{\gamma}$','interpreter', 'LaTeX','FontSize',28); % x-axis label
-            ylabel('$S$','interpreter', 'LaTeX','FontSize',28); % y-axis label
-    
-            figure; 
-            plot(rheodata.rates,(syy-szz)./rheodata.rates.^2,'LineWidth',2)
-            set(gca,'xscale','log'); set(gca,'yscale','log'); set(gca,'FontSize',16);
-            title('Steady second normal stress coefficient $\Psi_{2}(\dot{\gamma})$','Interpreter','LaTeX','FontSize',24)
-            xlabel('$\dot{\gamma}$','interpreter', 'LaTeX','FontSize',28); % x-axis label
-            ylabel('$ \Psi_{2}$','interpreter', 'LaTeX','FontSize',28); % y-axis label   
-    
-        elseif strcmp(type,'startup_stress')
-    
-            figure; 
-            plot(rheodata.time,rheodata.strain,'LineWidth',2)
-            set(gca,'FontSize',16);
-            set(gca,'xscale','linear')
-            set(gca,'yscale','linear')
-            title('Transient shear strain for imposed shear stress','Interpreter','LaTeX','FontSize',24)
-            xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
-            ylabel('$\gamma$','interpreter', 'LaTeX','FontSize',28); % y-axis label
+            if strcmp(plottype,'strain')
+            
+                figure; 
+                plot(rheodata.time,rheodata.strain,'LineWidth',2)
+                set(gca,'FontSize',16);
+                set(gca,'xscale','linear')
+                set(gca,'yscale','linear')
+                title('Transient shear strain for imposed shear stress','Interpreter','LaTeX','FontSize',24)
+                xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+                ylabel('$\gamma$','interpreter', 'LaTeX','FontSize',28); % y-axis label
+
+            end
 
         end
 
     elseif flowtype == 2 || flowtype == 3  % uni/bi-extensional flow
 
-        if strcmp(type,'startup')
+        if strcmp(timetype,'startup')
 
-            figure; 
-            plot(time,(sxx-syy)/rheodata.rate_for_startup,'LineWidth',2)
-            set(gca,'xscale','linear'); set(gca,'yscale','linear'); set(gca,'FontSize',16);
-            title('Transient extensional viscosity $\eta_{\rm E}(t)$','Interpreter','LaTeX','FontSize',24)
-            xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
-            ylabel('$ \eta_{\rm E} $','interpreter', 'LaTeX','FontSize',28); % y-axis label
+            if strcmp(plottype,'visc')
 
-        elseif strcmp(type,'steady')
+                figure; 
+                plot(time,(sxx-syy)/rheodata.rate_for_startup,'LineWidth',2)
+                set(gca,'xscale','linear'); set(gca,'yscale','linear'); set(gca,'FontSize',16);
+                title('Transient extensional viscosity $\eta_{\rm E}(t)$','Interpreter','LaTeX','FontSize',24)
+                xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+                ylabel('$ \eta_{\rm E} $','interpreter', 'LaTeX','FontSize',28); % y-axis label
 
-            figure; 
-            plot(rheodata.rates,(sxx-syy)./rheodata.rates,'LineWidth',2)
-            set(gca,'xscale','log'); set(gca,'yscale','log'); set(gca,'FontSize',16);
-            title('Steady extensional viscosity $\eta_{\rm E}(\dot{\epsilon})$','Interpreter','LaTeX','FontSize',24)
-            xlabel('$\dot{\epsilon}$','interpreter', 'LaTeX','FontSize',28); % x-axis label
-            ylabel('$ \eta_{\rm E} $','interpreter', 'LaTeX','FontSize',28); % y-axis label
+            elseif strcmp(plottype,'stress')
 
-         elseif strcmp(type,'startup_stress')
+                figure; 
+                plot(time,sxx-syy,'LineWidth',2)
+                set(gca,'xscale','linear'); set(gca,'yscale','linear'); set(gca,'FontSize',16);
+                title('Transient normal stress $N_1(t)=\tau_{xx}-\tau_{yy}$','Interpreter','LaTeX','FontSize',24)
+                xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+                ylabel('$ N_1 $','interpreter', 'LaTeX','FontSize',28); % y-axis label
+
+            end
+
+        elseif strcmp(timetype,'steady')
+
+            if strcmp(plottype,'visc')
+
+                figure; 
+                plot(rheodata.rates,(sxx-syy)./rheodata.rates,'LineWidth',2)
+                set(gca,'xscale','log'); set(gca,'yscale','log'); set(gca,'FontSize',16);
+                title('Steady extensional viscosity $\eta_{\rm E}(\dot{\epsilon})$','Interpreter','LaTeX','FontSize',24)
+                xlabel('$\dot{\epsilon}$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+                ylabel('$ \eta_{\rm E} $','interpreter', 'LaTeX','FontSize',28); % y-axis label
+
+            elseif strcmp(plottype,'stress')
+
+                figure; 
+                plot(rheodata.rates,(sxx-syy)./rheodata.rates,'LineWidth',2)
+                set(gca,'xscale','log'); set(gca,'yscale','log'); set(gca,'FontSize',16);
+                title('Steady normal stress $N_1(\dot{\epsilon})=\tau_{xx}-\tau_{yy}$','Interpreter','LaTeX','FontSize',24)
+                xlabel('$\dot{\epsilon}$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+                ylabel('$N_1$','interpreter', 'LaTeX','FontSize',28); % y-axis label
+
+            end
+
+         elseif strcmp(timetype,'startup_stress')
     
-            figure; 
-            plot(rheodata.time,rheodata.strain,'LineWidth',2)
-            set(gca,'FontSize',16);
-            set(gca,'xscale','linear')
-            set(gca,'yscale','linear')
-            title('Transient elongational strain for imposed shear stress','Interpreter','LaTeX','FontSize',24)
-            xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
-            ylabel('$\epsilon$','interpreter', 'LaTeX','FontSize',28); % y-axis label
+            if strcmp(plottype,'strain')
+             
+                figure; 
+                plot(rheodata.time,rheodata.strain,'LineWidth',2)
+                set(gca,'FontSize',16);
+                set(gca,'xscale','linear')
+                set(gca,'yscale','linear')
+                title('Transient elongational strain for imposed normal stress','Interpreter','LaTeX','FontSize',24)
+                xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+                ylabel('$\epsilon$','interpreter', 'LaTeX','FontSize',28); % y-axis label
+
+            end
 
          end
     end

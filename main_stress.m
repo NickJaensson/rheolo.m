@@ -3,6 +3,7 @@ close all; clear
 addpath('subs/')
 
 flowtype = 1;  % 1: shear, 2: planar extension, 3: uniaxial extension
+plottype = 'strain'; % 'strain': plot strain
 
 numtimesteps1  = 40;    % number of time steps in zone 1
 numtimesteps2  = 1000;  % number of time steps in zone 2
@@ -36,6 +37,7 @@ numsteps = numtimesteps1+numtimesteps2; % total number of steps
 
 rheodata.stress = zeros(6,numsteps);
 rheodata.strain = zeros(1,numsteps);
+rheodata.rates = zeros(1,numsteps);
 rheodata.time = zeros(1,numsteps);
 
 deltat = deltat1;
@@ -74,11 +76,12 @@ for n=1:numsteps
     % store the solutions
     rheodata.stress(:,n) = tau+solventstress;
     rheodata.strain(n) = shearstrain;
+    rheodata.rates(n) = ratenp1;
     rheodata.time(n) = time;
 
 end
 
-rheoplot('startup_stress',rheodata,vemodel,flowtype)
+rheoplot('startup_stress',rheodata,vemodel,flowtype,plottype)
 
 % function to calculate rate for a given stress
 function [rate] = rate_for_stress(cvec,vemodel,rheodata,flowtype)
