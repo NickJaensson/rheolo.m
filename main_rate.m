@@ -4,10 +4,10 @@ addpath('subs/')
 
 only_startup = 0; % if 0: stop after performing the startup simulation
 flowtype = 1; % 1: shear, 2: planar extension, 3: uniaxial extension
-plottype = 'visc'; % 'stress': plot stresses, 'visc': plot viscosities
+plottype = 'stress'; % 'stress': plot stresses, 'visc': plot viscosities
 
 vemodel.model = 2; % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
-vemodel.lam  = 0.1; %
+vemodel.lam  = 0.5; %
 vemodel.alpha = 0.1;
 vemodel.eps = 0.1;
 vemodel.G = 10.0;

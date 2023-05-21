@@ -89,18 +89,21 @@ function [] = rheoplot(timetype,rheodata,vemodel,flowtype,plottype)
                 figure; 
                 plot(rheodata.rates,sxy,'LineWidth',2); hold on;                
                 plot(rheodata.rates,sxx-syy,'LineWidth',2);
-                N2_negative = any(syy-szz<0);
-                if ~N2_negative
-                    plot(rheodata.rates,syy-szz,'LineWidth',2);
+                if any(syy-szz<0)
+                    plot(rheodata.rates,-(syy-szz),'LineWidth',2);
+                else
+                    plot(rheodata.rates,syy-szz,'LineWidth',2);                    
                 end
                 set(gca,'xscale','log'); set(gca,'yscale','log'); set(gca,'FontSize',16);
                 title('Steady-state stress','Interpreter','LaTeX','FontSize',24)                
                 xlabel('$\dot{\gamma}$','interpreter', 'LaTeX','FontSize',28); % x-axis label
                 ylabel('$\tau$','interpreter', 'LaTeX','FontSize',28); % y-axis label
-                if N2_negative
-                    legend('$\tau_{xy}$','$N_1 = \tau_{xx}-\tau_{yy}$','Interpreter','LaTeX')
+                if any(syy-szz<0)
+                    legend('$\tau_{xy}$','$N_1 = \tau_{xx}-\tau_{yy}$', ...
+                        '$-N_2 = \tau_{zz}-\tau_{yy}$','Interpreter','LaTeX')
                 else
-                    legend('$\tau_{xy}$','$N_1 = \tau_{xx}-\tau_{yy}$','$N_2 = \tau_{yy}-\tau_{zz}$','Interpreter','LaTeX')
+                    legend('$\tau_{xy}$','$N_1 = \tau_{xx}-\tau_{yy}$', ...
+                        '$N_2 = \tau_{yy}-\tau_{zz}$','Interpreter','LaTeX')
                 end
 
             end
