@@ -1,8 +1,9 @@
 function [] = rheoplot(timetype,rheodata,vemodel,flowtype,plottype)
 
-    time = rheodata.time;
+    % extract stresses from rheodata for convenience
     sxx = rheodata.stress(1,:); sxy = rheodata.stress(2,:); sxz = rheodata.stress(3,:);
     syy = rheodata.stress(4,:); syz = rheodata.stress(5,:); szz = rheodata.stress(6,:);
+    time = rheodata.time;
 
     if flowtype == 1 % simple shear
 
@@ -121,6 +122,17 @@ function [] = rheoplot(timetype,rheodata,vemodel,flowtype,plottype)
                 xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
                 ylabel('$\gamma$','interpreter', 'LaTeX','FontSize',28); % y-axis label
 
+            elseif strcmp(plottype,'rate')
+
+                figure; 
+                plot(rheodata.time,rheodata.rates,'LineWidth',2)
+                set(gca,'FontSize',16);
+                set(gca,'xscale','linear')
+                set(gca,'yscale','linear')
+                title('Transient strain-rate for imposed shear stress','Interpreter','LaTeX','FontSize',24)
+                xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+                ylabel('$\dot{\gamma}$','interpreter', 'LaTeX','FontSize',28); % y-axis label                
+
             end
 
         end
@@ -183,6 +195,17 @@ function [] = rheoplot(timetype,rheodata,vemodel,flowtype,plottype)
                 title('Transient elongational strain for imposed normal stress','Interpreter','LaTeX','FontSize',24)
                 xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
                 ylabel('$\epsilon$','interpreter', 'LaTeX','FontSize',28); % y-axis label
+            
+            elseif strcmp(plottype,'rate')
+             
+                figure; 
+                plot(rheodata.time,rheodata.rates,'LineWidth',2)
+                set(gca,'FontSize',16);
+                set(gca,'xscale','linear')
+                set(gca,'yscale','linear')
+                title('Transient elongational rate for imposed normal stress','Interpreter','LaTeX','FontSize',24)
+                xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
+                ylabel('$\dot{\epsilon}$','interpreter', 'LaTeX','FontSize',28); % y-axis label
 
             end
 
