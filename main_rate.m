@@ -109,7 +109,7 @@ if only_startup == 0
             error('Error: no solution was found by fsolve');
         end
 
-        % store the viscosity
+        % store the stress
         taun = stress_viscoelastic_3D(cvec,vemodel);
         solventstress = stress_solvent_3D(vemodel,rheodata.rates(i),flowtype);
 
