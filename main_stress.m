@@ -5,12 +5,16 @@ addpath('subs/')
 % general simulation parameters
 
 flowtype = 1;  % 1: shear, 2: planar extension, 3: uniaxial extension
-plottype = 'strain'; % 'strain': plot strain
+plottype = 'strain'; % 'strain': plot strain 'rate': plot strain rate
 
 numtimesteps1  = 40;   % number of time steps in zone 1
 numtimesteps2  = 1000; % number of time steps in zone 2
 time1 = 4e-3;          % duration of zone 1
 time2 = 1.0;           % duration of zone 2
+
+rheodata.stress_imp = 12; % imposed stress level defined as:
+                          % stress_xy             for shear flow (flowtype 1)
+                          % stress_xx - stress_yy for elongation flow (flowtype 2 & 3)
 
 % viscoelastic model parameters
 
@@ -34,10 +38,6 @@ vemodel.tauy = 10.0; % yield stress
 % if SRM2 (alam == 3)
 vemodel.Kfac = 10.0; % consistency factor of power law
 vemodel.nexp = 0.5;  % shear thinning index
-
-% imposed stress level
-rheodata.stress_imp = 12; % stress_xy             for shear flow (flowtype 1)
-                          % stress_xx - stress_yy for elongation flow (flowtype 2 & 3)
 
 cvec = [1 0 0 1 0 1];
 shearstrain = 0.0;
