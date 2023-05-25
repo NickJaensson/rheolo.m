@@ -2,33 +2,45 @@ close all; clear
 
 addpath('subs/')
 
-only_startup = 0; % if 0: stop after performing the startup simulation
-flowtype = 1; % 1: shear, 2: planar extension, 3: uniaxial extension
+% general simulation parameters
+
+only_startup = 0;    % if 0: stop after performing the startup simulation
+flowtype = 1;        % 1: shear, 2: planar extension, 3: uniaxial extension
 plottype = 'stress'; % 'stress': plot stresses, 'visc': plot viscosities
 
-vemodel.model = 2; % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
-vemodel.lam  = 0.5; %
-vemodel.alpha = 0.1;
-vemodel.eps = 0.1;
-vemodel.G = 10.0;
-vemodel.alam = 2; % 0:no adapted alam 1:elastic 2:SRM1 model  3:SRM2 model
+rheodata.rates = logspace(-3,2,500); % range of rates to simulate
+
+% viscoelastic model parameters
+
+vemodel.model = 2;   % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
+vemodel.alam = 2;    % 0:no adapted lambda 1:elastic 2:SRM1 model  3:SRM2 model
+vemodel.lam  = 0.1;  % relaxation time
+vemodel.G = 10.0;    % elastic modulus
 vemodel.eta_s = 0.1; % solvent viscosity
 
-% if SRM1 or SRM2
+% model specific material parameters
+
+% if Giesekus (model == 2)
+vemodel.alpha = 0.1; % alpha parameter for Giesekus
+
+% if PTT (model == 3 or 4)
+vemodel.eps = 0.1;   % epsilon parameter in PTT model
+
+% if SRM1 or SRM2 (alam == 2 or 3)
 vemodel.tauy = 10.0; % yield stress
 
-% if SRM2
-vemodel.Kfac = 100.0; % consistency factor of power law
-vemodel.nexp = 0.5;   % shear thinning index
-
-rheodata.rates = logspace(-3,2,500);
-rheodata.rate_for_startup = rheodata.rates(end); % or use another rate if only_startup == 1
+% if SRM2 (alam == 3)
+vemodel.Kfac = 10.0; % consistency factor of power law
+vemodel.nexp = 0.5;  % shear thinning index
 
 % parameters for the startup problem
+% NOTE: for only_startup == 0, this must be the final rate, you can
+%       use another rate if only_startup == 1
+rheodata.rate_for_startup = rheodata.rates(end);
 time_startup = 40*vemodel.lam;
 numsteps = 1000; deltat = time_startup/numsteps;
 
-% check if transient similation is at first rate for the steady simulations
+% check if transient similation is at final rate for the steady simulations
 if only_startup == 0 && rheodata.rate_for_startup ~=rheodata.rates(end)
     error('Performing steady simulations but rate ~= to rates(end)')
 end
@@ -68,9 +80,10 @@ for n=1:numsteps
 
 end
 
+% plot the results
 if only_startup == 1; rheoplot('startup',rheodata,vemodel,flowtype,plottype); end
 
-rheodata.stress = zeros(6,length(rheodata.rates));
+rheodata.stress = zeros(6,length(rheodata.rates)); % initialize stress data
 
 if only_startup == 0
 
@@ -106,6 +119,7 @@ if only_startup == 0
 
     end
 
+    % plot the results
     rheoplot('steady',rheodata,vemodel,flowtype,plottype);
 
     % Giesekus solution for checking

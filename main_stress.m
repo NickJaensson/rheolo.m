@@ -2,33 +2,42 @@ close all; clear
 
 addpath('subs/')
 
+% general simulation parameters
+
 flowtype = 1;  % 1: shear, 2: planar extension, 3: uniaxial extension
 plottype = 'strain'; % 'strain': plot strain
 
-numtimesteps1  = 40;    % number of time steps in zone 1
-numtimesteps2  = 1000;  % number of time steps in zone 2
-time1 = 4e-3;
-deltat1 = time1/numtimesteps1;
-deltat2 = 1e-3;
+numtimesteps1  = 40;   % number of time steps in zone 1
+numtimesteps2  = 1000; % number of time steps in zone 2
+time1 = 4e-3;          % duration of zone 1
+time2 = 1.0;           % duration of zone 2
 
-vemodel.model = 1;     % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
-vemodel.lam  = 5.0;    % relaxation time
-vemodel.alpha = 0.1;   % mobility in the Giesekus model 
-vemodel.eps = 0.1;     % epsilon in the PTT model
-vemodel.G = 10000.0;   % modulus
-vemodel.alam = 3;      % 0: no adapted alam  2: SRM1 model  3: SRM2 model
-vemodel.eta_s = 100.0; % solvent viscosity
+% viscoelastic model parameters
 
-% if SRM1 or SRM2
-vemodel.tauy = 2000.0; % yield stress
+vemodel.model = 2;   % 1:UCM, 2:Giesekus, 3:PTTlin, 4:PTTexp
+vemodel.alam = 2;    % 0:no adapted lambda 1:elastic 2:SRM1 model  3:SRM2 model
+vemodel.lam  = 0.1;  % relaxation time
+vemodel.G = 10.0;    % elastic modulus
+vemodel.eta_s = 0.1; % solvent viscosity
 
-% if SRM2
-vemodel.Kfac = 100.0;  % consistency factor of power law
-vemodel.nexp = 0.5;    % shear thinning index
+% model specific material parameters
 
-rheodata.stress_imp = 2100; % imposed stress level
-                            % stress_xy             for shear flow (flowtype 1)
-                            % stress_xx - stress_yy for elongation flow (flowtype 2 & 3)
+% if Giesekus (model == 2)
+vemodel.alpha = 0.1; % alpha parameter for Giesekus
+
+% if PTT (model == 3 or 4)
+vemodel.eps = 0.1;   % epsilon parameter in PTT model
+
+% if SRM1 or SRM2 (alam == 2 or 3)
+vemodel.tauy = 10.0; % yield stress
+
+% if SRM2 (alam == 3)
+vemodel.Kfac = 10.0; % consistency factor of power law
+vemodel.nexp = 0.5;  % shear thinning index
+
+% imposed stress level
+rheodata.stress_imp = 12; % stress_xy             for shear flow (flowtype 1)
+                          % stress_xx - stress_yy for elongation flow (flowtype 2 & 3)
 
 cvec = [1 0 0 1 0 1];
 shearstrain = 0.0;
@@ -39,6 +48,9 @@ rheodata.stress = zeros(6,numsteps);
 rheodata.strain = zeros(1,numsteps);
 rheodata.rates = zeros(1,numsteps);
 rheodata.time = zeros(1,numsteps);
+
+deltat1 = time1/numtimesteps1;
+deltat2 = time2/numtimesteps2;
 
 deltat = deltat1;
 time = 0.0;
@@ -81,6 +93,7 @@ for n=1:numsteps
 
 end
 
+% plot the results
 rheoplot('startup_stress',rheodata,vemodel,flowtype,plottype)
 
 % function to calculate rate for a given stress
