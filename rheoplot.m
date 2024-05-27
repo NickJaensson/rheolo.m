@@ -28,7 +28,7 @@ function [] = rheoplot(timetype,rheodata,vemodel,flowtype,plottype)
                 figure; 
                 plot(time,(sxx-syy)./sxy,'LineWidth',2)
                 set(gca,'xscale','linear'); set(gca,'yscale','linear'); set(gca,'FontSize',16);
-                title('Transient stress ratio $S(t)$','Interpreter','LaTeX','FontSize',24)
+                title('Transient stress ratio $S(t)=N_1(t)/\tau_{xy}(t)$','Interpreter','LaTeX','FontSize',24)
                 xlabel('$t$','interpreter', 'LaTeX','FontSize',28); % x-axis label
                 ylabel('$S$','interpreter', 'LaTeX','FontSize',28); % y-axis label
         
@@ -74,7 +74,7 @@ function [] = rheoplot(timetype,rheodata,vemodel,flowtype,plottype)
                 figure; 
                 plot(rheodata.rates,(sxx-syy)./sxy,'LineWidth',2)
                 set(gca,'xscale','log'); set(gca,'yscale','log'); set(gca,'FontSize',16);
-                title('Steady stress ratio $S(\dot{\gamma})$','Interpreter','LaTeX','FontSize',24)
+                title('Steady stress ratio $S(\dot{\gamma})=N_1(\dot{\gamma})/\tau_{xy}(\dot{\gamma})$','Interpreter','LaTeX','FontSize',24)
                 xlabel('$\dot{\gamma}$','interpreter', 'LaTeX','FontSize',28); % x-axis label
                 ylabel('$S$','interpreter', 'LaTeX','FontSize',28); % y-axis label
         
