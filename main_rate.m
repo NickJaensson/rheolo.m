@@ -4,7 +4,7 @@ addpath('subs/')
 
 % general simulation parameters
 
-only_startup = 0;    % if 0: stop after performing the startup simulation
+only_startup = 0;    % if 1: stop after performing the startup simulation
 flowtype = 1;        % 1: shear, 2: planar extension, 3: uniaxial extension
 plottype = 'stress'; % 'stress': plot stresses, 'visc': plot viscosities
 
